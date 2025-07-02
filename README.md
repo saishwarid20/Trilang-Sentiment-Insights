@@ -1,1 +1,2 @@
 # Trilang-Sentiment-Insights
+An advanced sentiment analysis tool designed to analyze and process text data in three languages simultaneously—English, Hindi and Marathi. This project utlilizes Natural Language Processing (NLP) techniques to extract sentiment (positive, neutral, or negative) from user-generated content across different platforms, such as social media, customer reviews, and online forums. This offers a comprehensive understanding of sentiments across different linguistic audiences.
