@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sentiment Treasure Hunt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Raleway', sans-serif;
+      background: radial-gradient(circle, #f3e5f5, #e1bee7);
+      text-align: center;
+      padding: 40px;
+      overflow-x: hidden;
+    }
+
+    h1, h2, p {
+      color: #4a148c;
+      animation: fadeIn 1.5s ease-out;
+    }
+
+    .section {
+      display: none;
+      margin-top: 30px;
+      animation: fadeIn 1s ease-in;
+    }
+
+    .btn {
+      padding: 14px 28px;
+      margin: 10px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #6a1b9a;
+      color: white;
+      box-shadow: 0 0 10px #ce93d8;
+      transition: 0.4s ease;
+    }
+
+    .btn:hover {
+      background: #4a0072;
+      box-shadow: 0 0 20px #ab47bc;
+      transform: scale(1.05);
+    }
+
+    textarea {
+      width: 60%;
+      height: 150px;
+      font-size: 16px;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 12px;
+      border: 2px solid #8e24aa;
+      resize: none;
+      background: #f8eafc;
+    }
+
+    input[type="file"] {
+      margin: 20px 0;
+    }
+
+    #result {
+      font-weight: bold;
+      color: #6a1b9a;
+      margin-top: 20px;
+      white-space: pre-wrap;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .flip-container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .flip-card {
+      background-color: transparent;
+      width: 180px;
+      height: 100px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+    }
+
+    .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      padding: 30px 10px;
+      border-radius: 12px;
+      backface-visibility: hidden;
+      background: #6a1b9a;
+      color: white;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px #ab47bc;
+    }
+
+    .flip-card-back {
+      background: #4a0072;
+      transform: rotateY(180deg);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 999;
+      background-color: #6a1b9a;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ce93d8;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .theme-toggle:hover {
+      background-color: #4a0072;
+    }
+
+    /* DARK MODE THEME */
+    body.dark {
+      background: radial-gradient(circle, #170028, #170028);
+      color: #f0e6f6;
+    }
+
+    body.dark h1, body.dark h2, body.dark p, body.dark #result {
+      color: #f0e6f6;
+    }
+
+    body.dark .btn {
+      background: #170028;
+      color: #f0e6f6;
+      box-shadow: 0 0 10px #666;
+    }
+
+    body.dark .btn:hover {
+      background: #170028;
+      box-shadow: 0 0 15px #999;
+    }
+
+    body.dark textarea {
+      background: #170028;
+      color: #eee;
+      border-color: #888;
+    }
+
+    body.dark .flip-card-front,
+    body.dark .flip-card-back {
+      background: #170028;
+      color: #f0e6f6;
+      box-shadow: 0 0 10px #999;
+    }
+
+
+
+    #loader {
+      margin-top: 30px;
+    }
+
+    #loader img {
+      width: 80px;
+    }
+
+    @media (max-width: 768px) {
+      textarea {
+        width: 90%;
+      }
+
+      .flip-container {
+        flex-direction: column;
+        gap: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BACKGROUND MUSIC (Optional) -->
+  <audio id="bgMusic" loop autoplay hidden>
+    <!-- Replace with your own hosted .mp3 URL -->
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mp3">
+  </audio>
+
+  <audio id="clickSound" preload="auto">
+    <!-- Replace with a short click sound if you want -->
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/16/audio_0484e6b681.mp3" type="audio/mp3">
+  </audio>
+
+  <!-- WELCOME -->
+  <h1>🌟 Welcome to the Sentiment Treasure Hunt! 💎</h1>
+  <p>Every word holds a clue, and every sentence reveals a hidden gem of emotion! 🏆</p>
+  <p>Are you ready to unlock the secrets of feelings across languages? Let’s begin the hunt! 🔑</p>
+
+  <!-- TEXT OR IMAGE CHOICE -->
+  <div class="section" id="modeSelect" style="display: block;">
+    <h2>💎 Two Doors. One Feeling. Choose: Text Spell or Image Charm?</h2>
+    <p>Behind each choice lies a different kind of emotional insight. Which key will you take?</p>
+
+    <div class="flip-container">
+      <div class="flip-card" onclick="selectMode('text')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">🔤 Text Spell</div>
+          <div class="flip-card-back">🧙‍♂️ Words hold power!</div>
+        </div>
+      </div>
+
+      <div class="flip-card" onclick="selectMode('image')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">🖼️ Image Charm</div>
+          <div class="flip-card-back">🧩 Decode hidden clues!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LANGUAGE CHOICE -->
+  <!-- LANGUAGE CHOICE -->
+  <div class="section" id="languageSelect">
+    
+    <h2>🎭 Every Emotion Has a Voice. Which One Will You Hear?</h2>
+    <p>Choose a language to decode its true feeling.</p>
+    <button class="btn" onclick="selectLanguage('english')">🇬🇧 English</button>
+    <button class="btn" onclick="selectLanguage('hindi')">🇮🇳 हिंदी</button>
+    <button class="btn" onclick="selectLanguage('marathi')">🇮🇳 मराठी</button>
+    <button class="btn" onclick="goBack()">⬅️ Back</button>
+  </div>
+
+
+  <!-- TEXT INPUT AREA -->
+  <!-- TEXT INPUT AREA -->
+  <div class="section" id="textInput">
+    
+    <textarea id="textArea" placeholder="Enter your spell here..."></textarea><br>
+    <button class="btn" onclick="decodeText()">🧙 Decode</button>
+    <button class="btn" onclick="clearText()">❌ Clear</button>
+    <button class="btn" onclick="goBack()">⬅️ Back</button>
+  </div>
+
+
+  <!-- IMAGE UPLOAD AREA -->
+  <!-- IMAGE UPLOAD AREA -->
+  <div class="section" id="imageInput">
+    
+    <input type="file" id="imageUpload" accept="image/*"><br>
+    <button class="btn" onclick="decodeImage()">🧙 Decode</button>
+    <button class="btn" onclick="clearImage()">❌ Clear</button>
+    <button class="btn" onclick="goBack()">⬅️ Back</button>
+  </div>
+
+
+  <!-- LOADER -->
+  <div id="loader" style="display: none;">
+    <img src="https://i.gifer.com/VAyR.gif" alt="Loading...">
+    <p style="color: #6a1b9a; font-weight: bold;">Casting your sentiment spell... 🔮</p>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result"></div>
+  
+  
+  <button class="theme-toggle" onclick="toggleTheme()">🌙 Toggle Theme</button>
+
+  <script>
+    let selectedMode = "";
+    let selectedLanguage = "";
+
+    let lastVisibleSection = 'modeSelect';
+
+    function showSection(id) {
+      const sections = document.querySelectorAll('.section');
+      sections.forEach(s => s.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+      lastVisibleSection = id;
+    }
+
+    function selectMode(mode) {
+      playClickSound();
+      selectedMode = mode;
+      showSection('languageSelect');
+    }
+
+    function selectLanguage(lang) {
+      playClickSound();
+      selectedLanguage = lang;
+      if (selectedMode === 'text') {
+        showSection('textInput');
+      } else {
+        showSection('imageInput');
+      }
+    }
+
+    function goBack() {
+      if (lastVisibleSection === 'languageSelect') {
+        showSection('modeSelect');
+      } else if (lastVisibleSection === 'textInput' || lastVisibleSection === 'imageInput') {
+        showSection('languageSelect');
+      } else {
+        showSection('modeSelect');
+      }
+    }
+
+
+    function playClickSound() {
+      const sound = document.getElementById('clickSound');
+      if (sound) sound.play();
+    }
+
+    function selectMode(mode) {
+      playClickSound();
+      selectedMode = mode;
+      document.getElementById('modeSelect').style.display = 'none';
+      document.getElementById('languageSelect').style.display = 'block';
+    }
+
+    function selectLanguage(lang) {
+      playClickSound();
+      selectedLanguage = lang;
+      document.getElementById('languageSelect').style.display = 'none';
+
+      if (selectedMode === 'text') {
+        document.getElementById('textInput').style.display = 'block';
+      } else {
+        document.getElementById('imageInput').style.display = 'block';
+      }
+    }
+
+    function decodeText() {
+      const userText = document.getElementById('textArea').value;
+      if (!userText.trim()) {
+        alert("Please enter some text!");
+        return;
+      }
+      showLoader(true);
+
+      fetch('http://127.0.0.1:5000/analyze-text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: userText,
+          language: selectedLanguage.toLowerCase()
+        }),
+      })
+      .then(response => response.text())
+      .then(data => {
+        showLoader(false);
+        
+        // Check if the response contains an error message
+        if (data.toLowerCase().includes("error")) {
+          // Add styling for error message
+          document.getElementById('result').style.color = "#d32f2f"; // Red color for error
+          document.getElementById('result').innerText = data;
+        } else {
+          // Reset to normal style for successful results
+          document.getElementById('result').style.color = "#6a1b9a"; // Original color
+          document.getElementById('result').innerText = data;
+        }
+      })
+      .catch(error => {
+        showLoader(false);
+        document.getElementById('result').style.color = "#d32f2f"; // Red color for error
+        document.getElementById('result').innerText = "Error: " + error;
+        console.error('Error:', error);
+      });
+    }
+
+
+    function decodeImage() {
+      const imageFile = document.getElementById('imageUpload').files[0];
+      if (!imageFile) return alert("Please upload an image!");
+      showLoader(true);
+
+      const formData = new FormData();
+      formData.append("image", imageFile);
+      formData.append("language", selectedLanguage);
+
+      // Use consistent URL format with the text endpoint
+      fetch('http://127.0.0.1:5000/analyze-image', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        showLoader(false);
+        if (data.error) {
+          document.getElementById('result').innerText = `Error: ${data.error}`;
+        } else {
+          document.getElementById('result').innerText = `🖼️ Extracted Text: ${data.extracted_text}\n🔍 Result: ${data.sentiment}`;
+        }
+      })
+      .catch(err => {
+        showLoader(false);
+        console.error("Error:", err);
+        document.getElementById('result').innerText = `Error analyzing image: ${err.message}`;
+      });
+    }
+
+    function clearText() {
+      document.getElementById('textArea').value = "";
+      document.getElementById('result').innerText = "";
+    }
+
+    function clearImage() {
+      document.getElementById('imageUpload').value = "";
+      document.getElementById('result').innerText = "";
+    }
+
+    function showLoader(show) {
+      document.getElementById('loader').style.display = show ? 'block' : 'none';
+    }
+
+    // Navigation history stack
+    let navigationHistory = [];
+
+    function showSection(id) {
+      // Hide all sections
+      const sections = document.querySelectorAll('.section');
+      sections.forEach(s => s.style.display = 'none');
+
+      // Show the requested section
+      document.getElementById(id).style.display = 'block';
+
+      // Push to history if it's not the same as the last one
+      if (navigationHistory.length === 0 || navigationHistory[navigationHistory.length - 1] !== id) {
+        navigationHistory.push(id);
+      }
+    }
+
+    function selectMode(mode) {
+      playClickSound();
+      selectedMode = mode;
+      showSection('languageSelect');
+    }
+
+    function selectLanguage(lang) {
+      playClickSound();
+      selectedLanguage = lang;
+      if (selectedMode === 'text') {
+        showSection('textInput');
+      } else {
+        showSection('imageInput');
+      }
+    }
+
+    function goBack() {
+      const currentSection = navigationHistory.pop();
+
+      // 🧹 Clear input if navigating back from text or image input section
+      if (currentSection === 'textInput') {
+        document.getElementById('textArea').value = "";
+        document.getElementById('result').innerText = "";
+      } else if (currentSection === 'imageInput') {
+        document.getElementById('imageUpload').value = "";
+        document.getElementById('result').innerText = "";
+      }
+
+      if (navigationHistory.length === 0) {
+        showSection('modeSelect');
+        return;
+      }
+
+      const lastSection = navigationHistory[navigationHistory.length - 1];
+      showSection(lastSection);
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+    }
+
+
+  </script>
+
+</body>
+</html>
